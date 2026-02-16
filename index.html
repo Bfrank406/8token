@@ -1,71 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <style>
-        body {
-            background: #0f172a;
-            text-align: center;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-        #eight {
-            font-size: 150px;
-            font-weight: bold;
-            cursor: pointer;
-            color: gold;
-            text-shadow: 0 0 20px cyan;
-            user-select: none;
-            transition: transform 0.05s, color 0.5s, text-shadow 0.5s;
-            position: relative;
-            z-index: 10;
-        }
+<style>
+body {
+    background: #0f172a;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+}
 
-        /* Класс для огненного режима на 1000 тапов */
-        #eight.fire-mode {
-            color: #ff4500 !important;
-            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff8c00 !important;
-        }
+#eight {
+    font-size: 150px;
+    font-weight: bold;
+    cursor: pointer;
+    color: gold;
+    margin-top: 50px;
+    text-shadow: 0 0 20px cyan;
+}
 
-        #eight:active {
-            transform: scale(0.95);
-        }
+#score {
+    font-size: 40px;
+    margin-top: 20px;
+}
+</style>
+</head>
 
-        #score {
-            font-size: 40px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
+<body>
 
-        .plus-one {
-            position: absolute;
-            color: #00ffff;
-            font-size: 24px;
-            font-weight: bold;
-            pointer-events: none;
-            animation: moveUp 0.8s ease-out forwards;
-            z-index: 100;
-        }
+<h2>Tap the 8</h2>
+<div id="eight">8</div>
+<div id="score">0</div>
 
-        .fire-particle {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: fireAnim 1s ease-out forwards;
-        }
+<script>
+let score = 0;
+let tg = window.Telegram.WebApp;
 
-        @keyframes moveUp {
+document.getElementById("eight").onclick = function() {
+    score++;
+    document.getElementById("score").innerText = score;
+    tg.sendData(score.toString());
+}
+</script>
+
+</body>
+</html>
+
+        
