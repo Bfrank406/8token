@@ -1,51 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-body {
-    background: #0f172a;
-    text-align: center;
-    color: white;
-    font-family: Arial;
-}
-
-#eight {
-    font-size: 150px;
-    font-weight: bold;
-    cursor: pointer;
-    color: gold;
-    margin-top: 50px;
-    text-shadow: 0 0 20px cyan;
-}
-
-#score {
-    font-size: 40px;
-    margin-top: 20px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: #0f172a;
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        #eight {
+            font-size: 150px;
+            font-weight: bold;
+            cursor: pointer;
+            color: gold;
+            text-shadow: 0 0 20px cyan;
+            user-select: none;
+            transition: transform 0.05s;
+        }
+        #eight:active { transform: scale(0.95); }
+        #score { font-size: 40px; margin-top: 20px; font-weight: bold; }
+        h2 { margin-bottom: 10px; opacity: 0.7; }
+    </style>
 </head>
-
 <body>
+    <h2>Tap the 8</h2>
+    <div id="eight">8</div>
+    <div id="score">0</div>
 
-<h2>Tap the 8</h2>
-<div id="eight">8</div>
-<div id="score">0</div>
+    <script>
+        let tg = window.Telegram.WebApp;
+        let score = 0;
 
-<script>
-let score = 0;
-let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.setText("СОХРАНИТЬ И ВЫЙТИ");
+        tg.MainButton.show();
 
-document.getElementById("eight").onclick = function() {
-    score++;
-    document.getElementById("score").innerText = score;
-    tg.sendData(score.toString());
-}
-</script>
+        const eightElement = document.getElementById("eight");
+        const scoreElement = document.getElementById("score");
 
+        eightElement.onclick = function() {
+            score++;
+            scoreElement.innerText = score;
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        };
+
+        tg.onEvent("mainButtonClicked", function() {
+            tg.sendData(score.toString());
+        });
+    </script>
 </body>
 </html>
-
-        
