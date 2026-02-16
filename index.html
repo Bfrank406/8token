@@ -1,50 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        body {
+            background: #0f172a;
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
-<style>
-body {
-    background: #0f172a;
-    text-align: center;
-    color: white;
-    font-family: Arial;
-}
+        #eight {
+            font-size: 150px;
+            font-weight: bold;
+            cursor: pointer;
+            color: gold;
+            text-shadow: 0 0 20px cyan;
+            user-select: none;
+            transition: transform 0.1s;
+        }
 
-#eight {
-    font-size: 150px;
-    font-weight: bold;
-    cursor: pointer;
-    color: gold;
-    margin-top: 50px;
-    text-shadow: 0 0 20px cyan;
-}
+        #eight:active {
+            transform: scale(0.9);
+        }
 
-#score {
-    font-size: 40px;
-    margin-top: 20px;
-}
-</style>
+        #score {
+            font-size: 40px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 
 <body>
+    <h2>Tap the 8</h2>
+    <div id="eight">8</div>
+    <div id="score">0</div>
 
-<h2>Tap the 8</h2>
-<div id="eight">8</div>
-<div id="score">0</div>
+    <script>
+        let tg = window.Telegram.WebApp;
+        let score = 0;
 
-<script>
-let tg = window.Telegram.WebApp;
-let score = 0;
+        // Расширяем приложение на все окно
+        tg.expand();
 
-document.getElementById("eight").onclick = function() {
-    score++;
-    document.getElementById("score").innerText = score;
-    tg.sendData(score.toString());
-}
-</script>
+        // Настраиваем главную кнопку Telegram (внизу экрана)
+        tg.MainButton.setText("СОХРАНИТЬ И ВЫЙТИ");
+        tg.MainButton.textColor = "#FFFFFF";
+        tg.MainButton.color = "#2cab37";
+        tg.MainButton.show();
 
+        const eightElement = document.getElementById("eight");
+        const scoreElement = document.getElementById("score");
 
+        // Логика тапа
+        eightElement.onclick = function() {
+            score++;
+            scoreElement.innerText = score;
+            
+            // Вибрация при тапе (если поддерживается устройством)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        };
+
+        // Логика сохранения (при нажатии на кнопку внизу)
+        tg.onEvent("mainButtonClicked", function() {
+            // Отправляем данные боту. 
+            // ВАЖНО: sendData закроет WebApp автоматически.
+            tg.sendData(score.toString());
+        });
+    </script>
 </body>
 </html>
