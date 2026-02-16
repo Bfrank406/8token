@@ -35,8 +35,8 @@ body {
 <div id="score">0</div>
 
 <script>
-let score = 0;
 let tg = window.Telegram.WebApp;
+let score = 0;
 
 document.getElementById("eight").onclick = function() {
     score++;
@@ -44,6 +44,7 @@ document.getElementById("eight").onclick = function() {
     tg.sendData(score.toString());
 }
 </script>
+
 
 </body>
 </html>
