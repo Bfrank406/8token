@@ -5,20 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #111; color: white; font-family: sans-serif; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: manipulation; }
-        #rank-badge { font-size: 18px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
-        #rank-name { font-size: 24px; font-weight: bold; color: #fbbf24; margin-bottom: 20px; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
-        #eight { font-size: 150px; cursor: pointer; transition: transform 0.05s; }
-        #eight:active { transform: scale(0.9); }
-        #score { font-size: 40px; font-weight: bold; margin-top: 10px; }
-        .plus { position: absolute; color: #fbbf24; font-size: 24px; animation: up 0.8s forwards; pointer-events: none; }
+        body { background: #0b0f19; color: white; font-family: sans-serif; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: manipulation; }
+        #rank-name { font-size: 24px; font-weight: bold; color: #fbbf24; margin-bottom: 20px; }
+        
+        /* КВАДРАТНАЯ КНОПКА */
+        #tap-box {
+            width: 220px; height: 220px; background: #0044bb;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 110px; border-radius: 12px; cursor: pointer;
+            user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.05s;
+        }
+        #tap-box:active { transform: scale(0.95); }
+        
+        #score { font-size: 48px; font-weight: bold; margin-top: 25px; }
+        .plus { position: absolute; color: #fbbf24; font-size: 24px; animation: up 0.7s forwards; pointer-events: none; }
         @keyframes up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
-    <div id="rank-badge">Current Rank</div>
-    <div id="rank-name">Loading...</div>
-    <div id="eight">🎱</div>
+    <div id="rank-name">Загрузка...</div>
+    <div id="tap-box">🎱</div>
     <div id="score">0</div>
 
     <script>
@@ -26,47 +34,47 @@
         tg.expand();
 
         const urlParams = new URLSearchParams(window.location.search);
-        const baseBal = parseInt(urlParams.get('bal')) || 0;
-        let session = parseInt(localStorage.getItem('cs_session')) || 0;
+        const base = parseInt(urlParams.get('bal')) || 0;
+        let session = parseInt(localStorage.getItem('tap_v3')) || 0;
 
+        // ИСПРАВЛЕННЫЕ РАНГИ (БОЛЬШЕ НУЛЕЙ)
         const ranks = [
             { pts: 0, name: "Silver I ⚪", icon: "🎱" },
             { pts: 10000, name: "Silver Elite ⚪⚡", icon: "🥈" },
-            { pts: 30000, name: "Gold Nova I ⭐", icon: "⭐" },
-            { pts: 70000, name: "Gold Nova Master 🌟", icon: "🌟" },
-            { pts: 150000, name: "Master Guardian ⚔️", icon: "⚔️" },
-            { pts: 300000, name: "Legendary Eagle 🦅", icon: "🦅" },
-            { pts: 1000000, name: "Global Elite 🌍", icon: "👑" }
+            { pts: 50000, name: "Gold Nova ⭐", icon: "⭐" },
+            { pts: 150000, name: "Gold Nova Master 🌟", icon: "🌟" },
+            { pts: 500000, name: "Master Guardian ⚔️", icon: "⚔️" },
+            { pts: 1000000, name: "Legendary Eagle 🦅", icon: "🦅" },
+            { pts: 5000000, name: "Supreme Master 💠", icon: "💠" },
+            { pts: 10000000, name: "Global Elite 🌍", icon: "👑" }
         ];
 
         function update() {
-            let total = baseBal + session;
-            document.getElementById("score").innerText = total;
-            
-            let current = ranks[0];
-            for (let r of ranks) { if (total >= r.pts) current = r; }
-            
-            document.getElementById("rank-name").innerText = current.name;
-            document.getElementById("eight").innerText = current.icon;
+            let total = base + session;
+            document.getElementById("score").innerText = total.toLocaleString();
+            let cur = ranks[0];
+            for (let r of ranks) { if (total >= r.pts) cur = r; }
+            document.getElementById("rank-name").innerText = cur.name;
+            document.getElementById("tap-box").innerText = cur.icon;
         }
 
-        document.getElementById("eight").onclick = function(e) {
+        document.getElementById("tap-box").onclick = function(e) {
             session++;
-            localStorage.setItem('cs_session', session);
+            localStorage.setItem('tap_v3', session);
             update();
             let p = document.createElement("div");
             p.className = "plus"; p.innerText = "+1";
             p.style.left = e.clientX + "px"; p.style.top = e.clientY + "px";
             document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
+            setTimeout(() => p.remove(), 700);
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         };
 
-        tg.MainButton.setText("ПОКИНУТЬ (СОХРАНИТЬ)");
+        tg.MainButton.setText("СОХРАНИТЬ ПРОГРЕСС");
         tg.MainButton.show();
         tg.onEvent("mainButtonClicked", () => {
             tg.sendData(session.toString());
-            localStorage.removeItem('cs_session');
+            localStorage.removeItem('tap_v3');
         });
 
         update();
