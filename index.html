@@ -28,9 +28,15 @@
             color: gold;
             text-shadow: 0 0 20px cyan;
             user-select: none;
-            transition: transform 0.05s;
+            transition: transform 0.05s, color 0.5s, text-shadow 0.5s;
             position: relative;
             z-index: 10;
+        }
+
+        /* Класс для огненного режима на 1000 тапов */
+        #eight.fire-mode {
+            color: #ff4500 !important;
+            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff8c00 !important;
         }
 
         #eight:active {
@@ -43,7 +49,6 @@
             font-weight: bold;
         }
 
-        /* Стиль для эффекта +1 */
         .plus-one {
             position: absolute;
             color: #00ffff;
@@ -54,60 +59,13 @@
             z-index: 100;
         }
 
+        .fire-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fireAnim 1s ease-out forwards;
+        }
+
         @keyframes moveUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
-        }
-
-        h2 { margin-bottom: 10px; opacity: 0.7; }
-    </style>
-</head>
-
-<body>
-    <h2>Tap the 8</h2>
-    <div id="eight">8</div>
-    <div id="score">0</div>
-
-    <script>
-        let tg = window.Telegram.WebApp;
-        let score = 0;
-
-        tg.expand();
-        tg.MainButton.setText("СОХРАНИТЬ И ВЫЙТИ");
-        tg.MainButton.show();
-
-        const eightElement = document.getElementById("eight");
-        const scoreElement = document.getElementById("score");
-
-        // Функция создания анимации +1
-        function showPlusOne(x, y) {
-            const el = document.createElement("div");
-            el.innerText = "+1";
-            el.className = "plus-one";
-            el.style.left = x + "px";
-            el.style.top = y + "px";
-            document.body.appendChild(el);
-
-            // Удаляем элемент после завершения анимации
-            setTimeout(() => { el.remove(); }, 800);
-        }
-
-        eightElement.onclick = function(event) {
-            score++;
-            scoreElement.innerText = score;
-            
-            // Запускаем эффект +1 в месте клика
-            showPlusOne(event.clientX, event.clientY);
-
-            // Вибрация
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        };
-
-        tg.onEvent("mainButtonClicked", function() {
-            tg.sendData(score.toString());
-        });
-    </script>
-</body>
-</html>
