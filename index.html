@@ -1,112 +1,75 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); 
-            text-align: center; color: white; font-family: 'Segoe UI', sans-serif; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100vh; margin: 0; overflow: hidden; touch-action: manipulation;
-        }
-        #skin { 
-            font-size: 160px; cursor: pointer; transition: transform 0.05s; 
-            user-select: none; -webkit-user-select: none; filter: drop-shadow(0 0 20px rgba(0,255,255,0.3));
-        }
-        #skin:active { transform: scale(0.92); }
-        #score-container { margin-top: 20px; }
-        #total-score { font-size: 48px; font-weight: bold; color: #fbbf24; }
-        .label { font-size: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .plus-one { 
-            position: absolute; color: #fbbf24; font-size: 28px; font-weight: bold; 
-            pointer-events: none; animation: moveUp 0.8s ease-out forwards; 
-        }
-        @keyframes moveUp { 
-            0% { transform: translateY(0); opacity: 1; } 
-            100% { transform: translateY(-120px); opacity: 0; } 
-        }
+        body { background: #111; color: white; font-family: sans-serif; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: manipulation; }
+        #rank-badge { font-size: 18px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        #rank-name { font-size: 24px; font-weight: bold; color: #fbbf24; margin-bottom: 20px; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+        #eight { font-size: 150px; cursor: pointer; transition: transform 0.05s; }
+        #eight:active { transform: scale(0.9); }
+        #score { font-size: 40px; font-weight: bold; margin-top: 10px; }
+        .plus { position: absolute; color: #fbbf24; font-size: 24px; animation: up 0.8s forwards; pointer-events: none; }
+        @keyframes up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
-
-    <div class="label">Твой общий баланс</div>
-    <div id="score-container">
-        <span id="total-score">0</span> 💰
-    </div>
-    
-    <div id="skin">🎱</div>
-    <div id="session-info" style="margin-top: 10px; font-size: 12px; color: #64748b;">
-        Нажато за сейчас: +<span id="session-points">0</span>
-    </div>
+    <div id="rank-badge">Current Rank</div>
+    <div id="rank-name">Loading...</div>
+    <div id="eight">🎱</div>
+    <div id="score">0</div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 1. ПОЛУЧАЕМ ДАННЫЕ
-        // Баланс из базы бота (через URL)
         const urlParams = new URLSearchParams(window.location.search);
-        const baseBalance = parseInt(urlParams.get('bal')) || 0;
+        const baseBal = parseInt(urlParams.get('bal')) || 0;
+        let session = parseInt(localStorage.getItem('cs_session')) || 0;
 
-        // "Натопанное", но не сохраненное (из памяти телефона)
-        let sessionTaps = parseInt(localStorage.getItem('tap8_session')) || 0;
-
-        // Скины в зависимости от ОБЩЕГО счета
-        const skins = [
-            { limit: 0, icon: "🎱" },
-            { limit: 1000, icon: "🥉" },
-            { limit: 5000, icon: "🥈" },
-            { limit: 10000, icon: "🥇" },
-            { limit: 50000, icon: "💎" }
+        const ranks = [
+            { pts: 0, name: "Silver I ⚪", icon: "🎱" },
+            { pts: 10000, name: "Silver Elite ⚪⚡", icon: "🥈" },
+            { pts: 30000, name: "Gold Nova I ⭐", icon: "⭐" },
+            { pts: 70000, name: "Gold Nova Master 🌟", icon: "🌟" },
+            { pts: 150000, name: "Master Guardian ⚔️", icon: "⚔️" },
+            { pts: 300000, name: "Legendary Eagle 🦅", icon: "🦅" },
+            { pts: 1000000, name: "Global Elite 🌍", icon: "👑" }
         ];
 
-        const scoreEl = document.getElementById("total-score");
-        const sessionEl = document.getElementById("session-points");
-        const skinEl = document.getElementById("skin");
-
-        function updateUI() {
-            let total = baseBalance + sessionTaps;
-            scoreEl.innerText = total.toLocaleString();
-            sessionEl.innerText = sessionTaps;
-
-            // Меняем скин
-            let currentIcon = skins[0].icon;
-            for (let s of skins) {
-                if (total >= s.limit) currentIcon = s.icon;
-            }
-            skinEl.innerText = currentIcon;
+        function update() {
+            let total = baseBal + session;
+            document.getElementById("score").innerText = total;
+            
+            let current = ranks[0];
+            for (let r of ranks) { if (total >= r.pts) current = r; }
+            
+            document.getElementById("rank-name").innerText = current.name;
+            document.getElementById("eight").innerText = current.icon;
         }
 
-        // КЛИК
-        skinEl.onclick = function(event) {
-            sessionTaps++;
-            localStorage.setItem('tap8_session', sessionTaps); // Сохраняем в память телефона
-            updateUI();
-
-            // Анимация +1
+        document.getElementById("eight").onclick = function(e) {
+            session++;
+            localStorage.setItem('cs_session', session);
+            update();
             let p = document.createElement("div");
-            p.innerText = "+1";
-            p.className = "plus-one";
-            p.style.left = event.clientX + "px";
-            p.style.top = event.clientY + "px";
+            p.className = "plus"; p.innerText = "+1";
+            p.style.left = e.clientX + "px"; p.style.top = e.clientY + "px";
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 800);
-
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         };
 
-        // СОХРАНЕНИЕ
-        tg.MainButton.setText("СОХРАНИТЬ В БОТЕ");
+        tg.MainButton.setText("ПОКИНУТЬ (СОХРАНИТЬ)");
         tg.MainButton.show();
-        tg.onEvent("mainButtonClicked", function() {
-            // Отправляем боту ТОЛЬКО то, что натапали в этой сессии
-            tg.sendData(sessionTaps.toString());
-            localStorage.removeItem('tap8_session'); // Очищаем локальную память после отправки
+        tg.onEvent("mainButtonClicked", () => {
+            tg.sendData(session.toString());
+            localStorage.removeItem('cs_session');
         });
 
-        updateUI(); // Инициализация при запуске
+        update();
     </script>
 </body>
 </html>
