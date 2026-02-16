@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            background: #0f172a;
+            background: linear-gradient(180deg, #0f172a, #1e293b);
             text-align: center;
             color: white;
             font-family: Arial, sans-serif;
@@ -18,48 +18,167 @@
             margin: 0;
             overflow: hidden;
             touch-action: manipulation;
-        }
-        #eight {
-            font-size: 150px;
-            font-weight: bold;
-            cursor: pointer;
-            color: gold;
-            text-shadow: 0 0 20px cyan;
             user-select: none;
-            transition: transform 0.05s;
+            -webkit-user-select: none;
         }
-        #eight:active { transform: scale(0.95); }
-        #score { font-size: 40px; margin-top: 20px; font-weight: bold; }
-        h2 { margin-bottom: 10px; opacity: 0.7; }
+
+        /* Стиль для главной иконки (скин) */
+        #skin-container {
+            font-size: 150px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            filter: drop-shadow(0 0 20px cyan);
+            margin-bottom: 20px;
+        }
+
+        #skin-container:active {
+            transform: scale(0.90);
+        }
+
+        h2 { margin-bottom: 10px; opacity: 0.8; }
+        
+        #score {
+            font-size: 40px;
+            font-weight: bold;
+            color: #fbbf24;
+            text-shadow: 0 0 10px #fbbf24;
+        }
+
+        /* Полоска прогресса */
+        .progress-bar {
+            width: 80%;
+            height: 10px;
+            background-color: #334155;
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #22c55e;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .level-info {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* Анимация +1 */
+        .plus-one {
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: moveUp 0.8s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes moveUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
-    <h2>Tap the 8</h2>
-    <div id="eight">8</div>
+
+    <h2>Tap to Evolve!</h2>
+    
+    <div id="skin-container">🎱</div>
+    
     <div id="score">0</div>
+
+    <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+    </div>
+    <div id="level-info" class="level-info">Next Level: 100</div>
 
     <script>
         let tg = window.Telegram.WebApp;
         let score = 0;
+        
+        // Настройки уровней (Очки -> Скин)
+        const levels = [
+            { limit: 0, skin: "🎱", name: "Beginner" },
+            { limit: 100, skin: "🥉", name: "Bronze" },
+            { limit: 500, skin: "🥈", name: "Silver" },
+            { limit: 1000, skin: "🥇", name: "Gold" },
+            { limit: 5000, skin: "💎", name: "Diamond" },
+            { limit: 10000, skin: "👑", name: "King" }
+        ];
 
         tg.expand();
         tg.MainButton.setText("СОХРАНИТЬ И ВЫЙТИ");
         tg.MainButton.show();
 
-        const eightElement = document.getElementById("eight");
+        const skinElement = document.getElementById("skin-container");
         const scoreElement = document.getElementById("score");
+        const progressFill = document.getElementById("progress-fill");
+        const levelText = document.getElementById("level-info");
 
-        eightElement.onclick = function() {
+        // Функция обновления вида (скина)
+        function updateSkin() {
+            let currentSkin = levels[0].skin;
+            let nextLimit = levels[1].limit;
+
+            for (let i = 0; i < levels.length; i++) {
+                if (score >= levels[i].limit) {
+                    currentSkin = levels[i].skin;
+                    // Следующая цель
+                    if (i + 1 < levels.length) {
+                        nextLimit = levels[i + 1].limit;
+                    } else {
+                        nextLimit = score * 1.5; // Если макс уровень
+                    }
+                }
+            }
+            
+            skinElement.innerText = currentSkin;
+            
+            // Обновляем прогресс бар
+            let percentage = Math.min((score / nextLimit) * 100, 100);
+            progressFill.style.width = percentage + "%";
+            levelText.innerText = `Next Level: ${nextLimit}`;
+        }
+
+        // Анимация +1
+        function showPlusOne(x, y) {
+            const el = document.createElement("div");
+            el.innerText = "+1";
+            el.className = "plus-one";
+            el.style.left = x + "px";
+            el.style.top = y + "px";
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        skinElement.onclick = function(event) {
             score++;
             scoreElement.innerText = score;
+            
+            // Обновляем скин, если достигли нового уровня
+            updateSkin();
+
+            // Визуальные эффекты
+            showPlusOne(event.clientX, event.clientY);
+            
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
         };
 
+        // Отправка данных боту
         tg.onEvent("mainButtonClicked", function() {
             tg.sendData(score.toString());
         });
+
+        // Инициализация при запуске
+        updateSkin();
+
     </script>
 </body>
 </html>
